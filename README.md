@@ -4,7 +4,7 @@ Developed by [Dr. Heather Bedle](mailto:hbedle@ou.edu)
 Sustainable Energy Systems Certificate Program  
 University of Oklahoma — [ou.edu/mcee/ses](https://ou.edu/mcee/ses)
 
-**[Launch the quiz](https://hbedle-subsurface.github.io/SES_your_energy.html)**
+**[Launch the quiz](https://hbedle-subsurface.github.io/SES_your_energy/)**
 
 ---
 
