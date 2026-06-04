@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What's Your Energy? | OU SES Certificate</title>
+<meta name="description" content="Six questions. Find out which energy source matches your personality — and why that matters more than you think.">
+
+<!--
+  FONT PAIRING:
+  Display: "Archivo Black" (wide, mechanical, feels like infrastructure signage)
+  Body: "DM Sans" (same as sibling quiz — family consistency)
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
+<style>
+/* =====================
+   CSS CUSTOM PROPERTIES
+   ===================== */
+:root {
+  /* New palette: midnight blue → electric teal → near-black */
+  --midnight: #060D1F;
+  --navy: #0A1535;
+  --teal: #0A7B6C;
+  --teal-bright: #0DB89E;
+  --electric: #1DE9D5;
+  --near-black: #060810;
+  --off-white: #EBF4F6;
+  --warm-white: #F4FAFB;
+  --spark: #F0C040;
+  --spark-light: #F7D96A;
+
+  /* Result card palettes */
+  --solar-bg: #1A1000;
+  --solar-mid: #2A1E00;
+  --solar-accent: #F59B00;
+  --solar-text: #FAE0A0;
+
+  --wind-bg: #001A22;
+  --wind-mid: #002A38;
+  --wind-accent: #5BC8E8;
+  --wind-text: #B8E8F5;
+
+  --geo-bg: #1A0800;
+  --geo-mid: #2E1200;
+  --geo-accent: #E85A20;
+  --geo-text: #F5C8A8;
+
+  --nuclear-bg: #001A0A;
+  --nuclear-mid: #00280F;
+  --nuclear-accent: #40E080;
+  --nuclear-text: #A8F0C0;
+
+  --battery-bg: #0A001A;
+  --battery-mid: #140028;
+  --battery-accent: #A060F0;
+  --battery-text: #D8B8FF;
+
+  --wave-bg: #001228;
+  --wave-mid: #001E40;
+  --wave-accent: #2880F0;
+  --wave-text: #A8C8FF;
+
+  --gas-bg: #0F1A0A;
+  --gas-mid: #182A10;
+  --gas-accent: #7EC850;
+  --gas-text: #C8EAA8;
+
+  --font-display: 'Archivo Black', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
+  --radius: 4px;
+  --radius-lg: 12px;
+}
+
+/* =====================
+   RESET + BASE
+   ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--off-white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  /* Midnight blue → electric teal → near black */
+  background:
+    radial-gradient(ellipse 90% 50% at 5% 15%, rgba(10, 123, 108, 0.4) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 90% 80%, rgba(6, 13, 31, 0.9) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 70% at 50% 40%, rgba(29, 233, 213, 0.06) 0%, transparent 65%),
+    linear-gradient(155deg, #030A1A 0%, #050F1E 35%, #060810 100%);
+  background-attachment: fixed;
+}
+
+/* grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23grain)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.7;
+}
+
+/* Animated ambient pulse — feels electric */
+body::after {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(29, 233, 213, 0.04) 0%, transparent 70%);
+  animation: ambientPulse 8s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes ambientPulse {
+  from { transform: scale(1) translate(0, 0); opacity: 0.6; }
+  to   { transform: scale(1.3) translate(5%, 8%); opacity: 1; }
+}
+
+/* =====================
+   LAYOUT
+   ===================== */
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* =====================
+   INTRO
+   ===================== */
+#screen-intro {
+  padding-top: 60px;
+  padding-bottom: 80px;
+}
+
+.intro-eyebrow {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal-bright);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intro-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: var(--teal-bright);
+}
+
+.intro-headline {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 14vw, 96px);
+  font-weight: 400;
+  line-height: 1.0;
+  letter-spacing: 0.01em;
+  color: var(--warm-white);
+  margin-bottom: 8px;
+}
+
+.intro-headline-sub {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 7vw, 48px);
+  font-weight: 400;
+  line-height: 1.0;
+  letter-spacing: 0.01em;
+  color: var(--teal-bright);
+  margin-bottom: 32px;
+  display: block;
+}
+
+.intro-body {
+  font-size: 16px;
+  line-height: 1.65;
+  color: rgba(235, 244, 246, 0.72);
+  max-width: 500px;
+  margin-bottom: 40px;
+}
+
+.intro-body strong {
+  color: var(--off-white);
+  font-weight: 500;
+}
+
+.intro-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 44px;
+  max-width: 480px;
+}
+
+.fact-chip {
+  background: rgba(29, 233, 213, 0.05);
+  border: 1px solid rgba(29, 233, 213, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+}
+
+.fact-number {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--teal-bright);
+  line-height: 1;
+  margin-bottom: 4px;
+  letter-spacing: 0.01em;
+}
+
+.fact-label {
+  font-size: 11.5px;
+  color: rgba(235, 244, 246, 0.5);
+  line-height: 1.4;
+}
+
+.btn-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--teal-bright);
+  color: #001A17;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  padding: 18px 36px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 32px rgba(13, 184, 158, 0.3);
+}
+
+.btn-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 40px rgba(13, 184, 158, 0.5);
+}
+
+.btn-start:focus-visible {
+  outline: 2px solid var(--spark);
+  outline-offset: 3px;
+}
+
+.intro-disclaimer {
+  margin-top: 20px;
+  font-size: 12px;
+  color: rgba(235, 244, 246, 0.3);
+  font-style: italic;
+}
+
+.intro-deco {
+  margin: 48px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0.2;
+}
+.intro-deco::before, .intro-deco::after {
+  content: ''; flex: 1; height: 1px; background: var(--off-white);
+}
+.intro-deco-text {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* =====================
+   QUIZ
+   ===================== */
+#screen-quiz {
+  padding-top: 40px;
+  padding-bottom: 80px;
+}
+
+.progress-wrap { margin-bottom: 40px; }
+
+.progress-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.progress-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(235, 244, 246, 0.4);
+  font-weight: 500;
+}
+
+.progress-count {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--teal-bright);
+  letter-spacing: 0.04em;
+}
+
+.progress-track {
+  height: 4px;
+  background: rgba(235, 244, 246, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--electric));
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 12px rgba(13, 184, 158, 0.5);
+}
+
+.question-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(235, 244, 246, 0.38);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.question-text {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 6.5vw, 36px);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--warm-white);
+  margin-bottom: 10px;
+  letter-spacing: 0.03em;
+}
+
+.question-sub {
+  font-size: 14px;
+  color: rgba(235, 244, 246, 0.48);
+  margin-bottom: 32px;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+  list-style: none;
+}
+
+.option-btn {
+  width: 100%;
+  text-align: left;
+  background: rgba(235, 244, 246, 0.03);
+  border: 1.5px solid rgba(235, 244, 246, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  cursor: pointer;
+  color: rgba(235, 244, 246, 0.78);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.option-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(13, 184, 158, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: var(--radius-lg);
+}
+
+.option-letter {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(235, 244, 246, 0.08);
+  border: 1px solid rgba(235, 244, 246, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  margin-top: 1px;
+  font-family: var(--font-display);
+}
+
+.option-text { flex: 1; position: relative; z-index: 1; }
+
+.option-btn:hover {
+  border-color: rgba(13, 184, 158, 0.45);
+  background: rgba(13, 184, 158, 0.07);
+  color: var(--off-white);
+  transform: translateX(2px);
+}
+
+.option-btn:hover::before { opacity: 1; }
+
+.option-btn:hover .option-letter {
+  background: rgba(13, 184, 158, 0.18);
+  border-color: rgba(13, 184, 158, 0.5);
+  color: var(--teal-bright);
+}
+
+.option-btn[aria-pressed="true"] {
+  background: rgba(13, 184, 158, 0.14);
+  border-color: var(--teal-bright);
+  color: var(--warm-white);
+  transform: translateX(4px);
+  box-shadow: inset 0 0 0 1px rgba(13, 184, 158, 0.25), 0 2px 20px rgba(13, 184, 158, 0.12);
+}
+
+.option-btn[aria-pressed="true"]::before { opacity: 1; }
+
+.option-btn[aria-pressed="true"] .option-letter {
+  background: var(--teal-bright);
+  border-color: var(--teal-bright);
+  color: #001A17;
+  box-shadow: 0 0 12px rgba(13, 184, 158, 0.45);
+}
+
+.option-btn:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+
+.quiz-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-back {
+  background: transparent;
+  border: 1.5px solid rgba(235, 244, 246, 0.18);
+  border-radius: var(--radius);
+  color: rgba(235, 244, 246, 0.48);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.btn-back:hover {
+  border-color: rgba(235, 244, 246, 0.38);
+  color: var(--off-white);
+}
+
+.btn-back:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+
+.btn-next {
+  background: var(--teal-bright);
+  border: none;
+  border-radius: var(--radius);
+  color: #001A17;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  padding: 14px 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 20px rgba(13, 184, 158, 0.25);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.btn-next.enabled { opacity: 1; pointer-events: auto; }
+.btn-next.enabled:hover { transform: translateY(-1px); box-shadow: 0 4px 28px rgba(13, 184, 158, 0.4); }
+.btn-next:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+
+.question-block { animation: slideInQuestion 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes slideInQuestion {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* =====================
+   RESULT
+   ===================== */
+#screen-result {
+  padding-top: 40px;
+  padding-bottom: 80px;
+}
+
+.result-reveal { animation: revealResult 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes revealResult {
+  from { opacity: 0; transform: scale(0.94) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.result-card {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.result-card-hero {
+  padding: 40px 28px 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* animated shimmer on hero */
+.result-card-hero::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  right: -20%;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  opacity: 0.05;
+  animation: heroGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlow {
+  from { transform: scale(1); }
+  to   { transform: scale(1.4) translate(-5%, 5%); }
+}
+
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 2px;
+  margin-bottom: 20px;
+  font-family: var(--font-body);
+}
+
+.result-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 10vw, 58px);
+  font-weight: 400;
+  line-height: 1.0;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+}
+
+.result-tagline {
+  font-size: clamp(15px, 4vw, 18px);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.45;
+  opacity: 0.82;
+}
+
+/* fun fact strip */
+.result-funfact {
+  padding: 16px 28px;
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.funfact-icon {
+  flex-shrink: 0;
+  font-size: 22px;
+}
+
+.funfact-text {
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+
+.funfact-text strong {
+  display: block;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 2px;
+  opacity: 1;
+}
+
+.result-card-body {
+  padding: 28px;
+  background: rgba(0,0,0,0.28);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.result-section { margin-bottom: 28px; }
+.result-section:last-child { margin-bottom: 0; }
+
+.result-section-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-family: var(--font-body);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.55;
+}
+
+.result-section-label::after {
+  content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.3;
+}
+
+.result-description {
+  font-size: 15px;
+  line-height: 1.7;
+  opacity: 0.9;
+}
+
+.result-ses-link {
+  font-size: 15px;
+  line-height: 1.65;
+  opacity: 0.85;
+}
+
+/* neighbor cards */
+.neighbors-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.neighbor-card {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.neighbor-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 400;
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+}
+
+.neighbor-note {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.6;
+}
+
+/* result footer */
+.email-nudge {
+  font-size: 14px;
+  color: rgba(235, 244, 246, 0.5);
+  margin-bottom: 10px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.btn-email {
+  width: 100%;
+  background: transparent;
+  border: 1.5px solid rgba(235, 244, 246, 0.2);
+  border-radius: var(--radius);
+  color: var(--off-white);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  padding: 18px 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+.btn-email:hover {
+  border-color: var(--teal-bright);
+  background: rgba(13, 184, 158, 0.07);
+}
+
+.btn-email:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+
+.btn-email-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(13, 184, 158, 0.12);
+  border: 1px solid rgba(13, 184, 158, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-bright);
+}
+
+.btn-email-copy strong {
+  display: block;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--teal-bright);
+  margin-bottom: 2px;
+}
+
+.btn-email-copy span {
+  font-size: 12.5px;
+  color: rgba(235, 244, 246, 0.45);
+}
+
+.result-footer {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-retake {
+  flex: 1;
+  min-width: 140px;
+  background: transparent;
+  border: 1.5px solid rgba(235, 244, 246, 0.18);
+  border-radius: var(--radius);
+  color: rgba(235, 244, 246, 0.6);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.btn-retake:hover { border-color: rgba(235, 244, 246, 0.38); color: var(--off-white); }
+.btn-retake:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+
+.btn-website {
+  flex: 1;
+  min-width: 140px;
+  background: var(--teal-bright);
+  border: none;
+  border-radius: var(--radius);
+  color: #001A17;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.btn-website:hover { background: var(--electric); transform: translateY(-1px); }
+.btn-website:focus-visible { outline: 2px solid var(--off-white); outline-offset: 2px; }
+
+/* =====================
+   RESULT THEMES
+   ===================== */
+
+/* SOLAR: warm, blazing, amber-gold */
+.result-solar .result-card-hero {
+  background: linear-gradient(145deg, var(--solar-bg) 0%, var(--solar-mid) 100%);
+  color: var(--solar-text);
+}
+.result-solar .result-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 80% -10%, rgba(245, 155, 0, 0.18), transparent);
+}
+.result-solar .result-badge { background: rgba(245,155,0,0.14); color: var(--solar-accent); }
+.result-solar .result-card-body { color: var(--solar-text); }
+.result-solar .result-funfact { color: var(--solar-text); }
+.result-solar .result-section-label { color: var(--solar-accent); }
+.result-solar .btn-email:hover { border-color: var(--solar-accent); background: rgba(245,155,0,0.06); }
+.result-solar .btn-email-copy strong { color: var(--solar-accent); }
+.result-solar .btn-email-icon { background: rgba(245,155,0,0.1); border-color: rgba(245,155,0,0.25); color: var(--solar-accent); }
+
+/* WIND: cool, breezy, sky blue */
+.result-wind .result-card-hero {
+  background: linear-gradient(145deg, var(--wind-bg) 0%, var(--wind-mid) 100%);
+  color: var(--wind-text);
+}
+.result-wind .result-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(91, 200, 232, 0.025) 0px, rgba(91,200,232,0.025) 1px,
+    transparent 1px, transparent 24px
+  );
+}
+.result-wind .result-badge { background: rgba(91,200,232,0.12); color: var(--wind-accent); }
+.result-wind .result-card-body { color: var(--wind-text); }
+.result-wind .result-funfact { color: var(--wind-text); }
+.result-wind .result-section-label { color: var(--wind-accent); }
+.result-wind .btn-email:hover { border-color: var(--wind-accent); background: rgba(91,200,232,0.06); }
+.result-wind .btn-email-copy strong { color: var(--wind-accent); }
+.result-wind .btn-email-icon { background: rgba(91,200,232,0.1); border-color: rgba(91,200,232,0.25); color: var(--wind-accent); }
+
+/* GEOTHERMAL: molten, deep red-orange */
+.result-geo .result-card-hero {
+  background: linear-gradient(145deg, var(--geo-bg) 0%, var(--geo-mid) 100%);
+  color: var(--geo-text);
+}
+.result-geo .result-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 110%, rgba(232, 90, 32, 0.22), transparent);
+}
+.result-geo .result-badge { background: rgba(232,90,32,0.14); color: var(--geo-accent); }
+.result-geo .result-card-body { color: var(--geo-text); }
+.result-geo .result-funfact { color: var(--geo-text); }
+.result-geo .result-section-label { color: var(--geo-accent); }
+.result-geo .btn-email:hover { border-color: var(--geo-accent); background: rgba(232,90,32,0.06); }
+.result-geo .btn-email-copy strong { color: var(--geo-accent); }
+.result-geo .btn-email-icon { background: rgba(232,90,32,0.1); border-color: rgba(232,90,32,0.25); color: var(--geo-accent); }
+
+/* NUCLEAR: precise, electric green */
+.result-nuclear .result-card-hero {
+  background: linear-gradient(145deg, var(--nuclear-bg) 0%, var(--nuclear-mid) 100%);
+  color: var(--nuclear-text);
+}
+.result-nuclear .result-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-radial-gradient(
+    circle at 70% 30%,
+    rgba(64,224,128,0.03) 0px, rgba(64,224,128,0.03) 1px,
+    transparent 1px, transparent 28px
+  );
+}
+.result-nuclear .result-badge { background: rgba(64,224,128,0.12); color: var(--nuclear-accent); }
+.result-nuclear .result-card-body { color: var(--nuclear-text); }
+.result-nuclear .result-funfact { color: var(--nuclear-text); }
+.result-nuclear .result-section-label { color: var(--nuclear-accent); }
+.result-nuclear .btn-email:hover { border-color: var(--nuclear-accent); background: rgba(64,224,128,0.06); }
+.result-nuclear .btn-email-copy strong { color: var(--nuclear-accent); }
+.result-nuclear .btn-email-icon { background: rgba(64,224,128,0.1); border-color: rgba(64,224,128,0.25); color: var(--nuclear-accent); }
+
+/* BATTERY: charged, electric purple */
+.result-battery .result-card-hero {
+  background: linear-gradient(145deg, var(--battery-bg) 0%, var(--battery-mid) 100%);
+  color: var(--battery-text);
+}
+.result-battery .result-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 40% at 50% 50%, rgba(160,96,240,0.1), transparent);
+}
+.result-battery .result-badge { background: rgba(160,96,240,0.14); color: var(--battery-accent); }
+.result-battery .result-card-body { color: var(--battery-text); }
+.result-battery .result-funfact { color: var(--battery-text); }
+.result-battery .result-section-label { color: var(--battery-accent); }
+.result-battery .btn-email:hover { border-color: var(--battery-accent); background: rgba(160,96,240,0.06); }
+.result-battery .btn-email-copy strong { color: var(--battery-accent); }
+.result-battery .btn-email-icon { background: rgba(160,96,240,0.1); border-color: rgba(160,96,240,0.25); color: var(--battery-accent); }
+
+/* WAVE/TIDAL: deep ocean blue */
+.result-wave .result-card-hero {
+  background: linear-gradient(145deg, var(--wave-bg) 0%, var(--wave-mid) 100%);
+  color: var(--wave-text);
+}
+.result-wave .result-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(40,128,240,0.03) 0px, rgba(40,128,240,0.03) 1px,
+    transparent 1px, transparent 20px
+  );
+}
+.result-wave .result-badge { background: rgba(40,128,240,0.14); color: var(--wave-accent); }
+.result-wave .result-card-body { color: var(--wave-text); }
+.result-wave .result-funfact { color: var(--wave-text); }
+.result-wave .result-section-label { color: var(--wave-accent); }
+.result-wave .btn-email:hover { border-color: var(--wave-accent); background: rgba(40,128,240,0.06); }
+.result-wave .btn-email-copy strong { color: var(--wave-accent); }
+.result-wave .btn-email-icon { background: rgba(40,128,240,0.1); border-color: rgba(40,128,240,0.25); color: var(--wave-accent); }
+
+
+/* NATURAL GAS + CARBON CAPTURE: industrial sage green */
+.result-gas .result-card-hero {
+  background: linear-gradient(145deg, var(--gas-bg) 0%, var(--gas-mid) 100%);
+  color: var(--gas-text);
+}
+.result-gas .result-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(126,200,80,0.025) 0px, rgba(126,200,80,0.025) 1px,
+    transparent 1px, transparent 18px
+  );
+}
+.result-gas .result-badge { background: rgba(126,200,80,0.14); color: var(--gas-accent); }
+.result-gas .result-card-body { color: var(--gas-text); }
+.result-gas .result-funfact { color: var(--gas-text); }
+.result-gas .result-section-label { color: var(--gas-accent); }
+.result-gas .btn-email:hover { border-color: var(--gas-accent); background: rgba(126,200,80,0.06); }
+.result-gas .btn-email-copy strong { color: var(--gas-accent); }
+.result-gas .btn-email-icon { background: rgba(126,200,80,0.1); border-color: rgba(126,200,80,0.25); color: var(--gas-accent); }
+
+/* =====================
+   DESKTOP
+   ===================== */
+@media (min-width: 600px) {
+  .result-card-hero { padding: 48px 36px 40px; }
+  .result-card-body { padding: 32px 36px; }
+  .result-funfact { padding: 18px 36px; }
+  .options-list { gap: 12px; }
+}
+
+@media (min-width: 768px) {
+  #screen-intro { padding-top: 80px; }
+  .app { padding: 0 32px; }
+  .intro-facts { grid-template-columns: repeat(4, 1fr); }
+}
+
+:focus-visible {
+  outline: 2px solid var(--spark);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <defs>
+    <symbol id="icon-arrow-right" viewBox="0 0 16 16">
+      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-arrow-left" viewBox="0 0 16 16">
+      <path d="M13 8H3M7 12L3 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-refresh" viewBox="0 0 16 16">
+      <path d="M2 8a6 6 0 1 0 1.5-4M2 4v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-external" viewBox="0 0 16 16">
+      <path d="M10 2h4v4M14 2L8 8M7 4H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-envelope" viewBox="0 0 20 20">
+      <rect x="2" y="5" width="16" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      <path d="M2 7l8 5 8-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="app" role="main">
+
+  <!-- =================== INTRO =================== -->
+  <section id="screen-intro" class="screen active" aria-label="Quiz introduction">
+    <p class="intro-eyebrow">OU Sustainable Energy Systems</p>
+
+    <h1 class="intro-headline">WHAT'S YOUR</h1>
+    <span class="intro-headline-sub">ENERGY?</span>
+
+    <p class="intro-body">
+      Right now, someone is charging their phone. Somewhere a data center is running 24 hours a day to keep your apps alive. A wind turbine in western Oklahoma just made electricity from nothing but moving air. All of it came from somewhere. <strong>Six questions about how you think and how you move through the world.</strong> One energy source that matches your personality — and a few things about the future of power that might genuinely surprise you.
+    </p>
+
+    <div class="intro-facts">
+      <div class="fact-chip">
+        <div class="fact-number">40%</div>
+        <div class="fact-label">of Oklahoma's electricity comes from wind</div>
+      </div>
+      <div class="fact-chip">
+        <div class="fact-number">2nd</div>
+        <div class="fact-label">in the US for wind energy resources</div>
+      </div>
+      <div class="fact-chip">
+        <div class="fact-number">10%</div>
+        <div class="fact-label">of global electricity use goes to data centers</div>
+      </div>
+      <div class="fact-chip">
+        <div class="fact-number">2050</div>
+        <div class="fact-label">the year most countries plan to reach net zero</div>
+      </div>
+    </div>
+
+    <button class="btn-start" id="btn-start" type="button">
+      Find out
+      <svg class="icon-inline" width="18" height="18" aria-hidden="true"><use href="#icon-arrow-right"/></svg>
+    </button>
+
+    <p class="intro-disclaimer">No data collected. No email required. Just a quiz.</p>
+    <div class="intro-deco"><span class="intro-deco-text">ou.edu/mcee/ses</span></div>
+  </section>
+
+  <!-- =================== QUIZ =================== -->
+  <section id="screen-quiz" class="screen" aria-label="Quiz questions" aria-live="polite">
+    <div class="progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="6" id="progress-bar" aria-label="Quiz progress">
+      <div class="progress-top">
+        <span class="progress-label">Progress</span>
+        <span class="progress-count" id="progress-count">1 of 6</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="question-block" id="question-block"></div>
+    <nav class="quiz-nav" aria-label="Question navigation">
+      <button class="btn-back" id="btn-back" type="button" aria-label="Go back to previous question">
+        <svg class="icon-inline" width="16" height="16" aria-hidden="true"><use href="#icon-arrow-left"/></svg>
+        Back
+      </button>
+      <button class="btn-next" id="btn-next" type="button" aria-disabled="true">
+        Next
+        <svg class="icon-inline" width="16" height="16" aria-hidden="true"><use href="#icon-arrow-right"/></svg>
+      </button>
+    </nav>
+  </section>
+
+  <!-- =================== RESULT =================== -->
+  <section id="screen-result" class="screen" aria-label="Your result" aria-live="polite">
+    <div class="result-reveal" id="result-content"></div>
+  </section>
+
+</div>
+
+<script>
+/* =====================================================================
+   QUIZ DATA — edit questions, options, scores, and results here.
+   Categories: solar, wind, geo, nuclear, battery, wave, gas
+   ===================================================================== */
+
+const QUESTIONS = [
+  {
+    id: 1,
+    eyebrow: "How you move",
+    text: "Pick the Saturday that actually sounds like you.",
+    sub: null,
+    options: [
+      { text: "Outside all day, soaking it up. No agenda, no plans.",                                              scores: { solar: 4, wave: 1 } },
+      { text: "Near water. You don't need to do anything. Just be near it.",                                       scores: { wave: 4, geo: 1 } },
+      { text: "Moving the whole time. Walk, drive, run -- you just can't stop.",                                   scores: { wind: 4, solar: 1 } },
+      { text: "Taking apart something broken and making it work again.",                                           scores: { gas: 4, battery: 1 } },
+      { text: "Absorbed in something slow. A long cook, a hard build, a deep read.",                               scores: { geo: 4, nuclear: 1 } },
+      { text: "Making sure everything and everyone is connected and on track.",                                    scores: { battery: 4, wind: 1 } },
+      { text: "Alone with a hard problem until it finally cracks.",                                                scores: { nuclear: 4, battery: 1 } }
+    ]
+  },
+  {
+    id: 2,
+    eyebrow: "Your first instinct",
+    text: "Every app on your phone runs on a server that never turns off. That server needs power around the clock. Your gut says:",
+    sub: null,
+    options: [
+      { text: "Use whatever's already built. Make it cleaner. Stop waiting for perfect.",                          scores: { gas: 4, battery: 1 } },
+      { text: "The sky gives us more energy every hour than we use in a year. Catch more of it.",                  scores: { solar: 4, wind: 1 } },
+      { text: "Oklahoma already generates 40% of its electricity from moving air. We could do that everywhere.",                                  scores: { wind: 4, solar: 1 } },
+      { text: "There's heat miles below us that never stops. Why aren't we using that?",                           scores: { geo: 4, wave: 1 } },
+      { text: "We generate plenty of power already. The problem is we waste most of it.",                          scores: { battery: 4, nuclear: 1 } },
+      { text: "The ocean never stops moving. 71% of the planet and we're barely touching it.",                     scores: { wave: 4, geo: 1 } },
+      { text: "You need something incredibly dense and reliable that doesn't care about weather.",                 scores: { nuclear: 4, battery: 1 } }
+    ]
+  },
+  {
+    id: 3,
+    eyebrow: "Someone who knows you well",
+    text: "Which complaint have you actually heard about yourself?",
+    sub: null,
+    options: [
+      { text: "\"You take forever. You need every single detail before you'll move.\"",                            scores: { geo: 4, nuclear: 1 } },
+      { text: "\"You're always trying to fix things that weren't broken.\"",                                      scores: { gas: 4, geo: 1 } },
+      { text: "\"You're all in -- then suddenly you're completely checked out.\"",                                 scores: { solar: 4, wind: 1 } },
+      { text: "\"You never stop. You're on the next thing before this one's even done.\"",                        scores: { wind: 4, wave: 1 } },
+      { text: "\"You're a lot. There's just a lot going on in there.\"",                                          scores: { nuclear: 4, battery: 1 } },
+      { text: "\"You keep everything running and nobody even notices.\"",                                          scores: { battery: 4, geo: 1 } },
+      { text: "\"You go with the flow way too easily.\"",                                                          scores: { wave: 4, solar: 1 } }
+    ]
+  },
+  {
+    id: 4,
+    eyebrow: "How you solve things",
+    text: "A city hasn't had reliable power in years. You're in charge of fixing it. What's your move?",
+    sub: null,
+    options: [
+      { text: "Start with what they already have. Upgrade it, clean it up, stop starting over.",                  scores: { gas: 4, battery: 1 } },
+      { text: "Tap into whatever the local geography is giving you for free.",                                     scores: { geo: 4, wave: 1 } },
+      { text: "Something invisible that runs constantly in the background without anyone noticing.",               scores: { wave: 4, geo: 1 } },
+      { text: "Something that produces an enormous amount of power from a very small space.",                     scores: { nuclear: 4, geo: 1 } },
+      { text: "Put panels and turbines everywhere, then build a smart system to hold it all together.",            scores: { battery: 4, solar: 2 } },
+      { text: "Whatever the region has in abundance that we're currently just letting go to waste.",               scores: { wind: 3, solar: 2 } },
+      { text: "The simplest, most maintainable thing that doesn't need a supply chain to survive.",               scores: { solar: 4, battery: 1 } }
+    ]
+  },
+  {
+    id: 5,
+    eyebrow: "Pick the true one",
+    text: "Which of these is actually you?",
+    sub: null,
+    options: [
+      { text: "I want to find the thing people have been ignoring and figure out why.",                            scores: { wave: 4, geo: 1 } },
+      { text: "I'd rather improve something that exists than build from scratch.",                                 scores: { gas: 4, battery: 1 } },
+      { text: "I need to understand the whole system or I can't trust any part of it.",                           scores: { battery: 4, nuclear: 1 } },
+      { text: "I want the problem nobody else has solved. The harder the better.",                                 scores: { nuclear: 4, wave: 1 } },
+      { text: "I'm most useful when I can move and adjust and don't have to stay in one place.",                  scores: { wind: 4, solar: 1 } },
+      { text: "I'm most energized when I can see exactly who I'm helping.",                                       scores: { solar: 4, wind: 1 } },
+      { text: "I work slow and deep and I come out the other side with something that lasts.",                    scores: { geo: 4, gas: 1 } }
+    ]
+  },
+  {
+    id: 6,
+    eyebrow: "Last one",
+    text: "A professor asks what excites you about the next 20 years. You say:",
+    sub: "The answer that actually comes out of your mouth.",
+    options: [
+      { text: "The fact that we're about to reinvent infrastructure that's been the same for a hundred years.",    scores: { battery: 4, gas: 1 } },
+      { text: "There are energy sources we've barely touched that could change everything.",                       scores: { wave: 4, geo: 1 } },
+      { text: "The stuff we've been told is too dangerous or too hard is getting a second look.",                  scores: { nuclear: 4, battery: 1 } },
+      { text: "That a state like Oklahoma is already showing the rest of the country what's possible.",            scores: { wind: 4, solar: 1 } },
+      { text: "That there's been heat sitting under our feet for 4 billion years and we're only now figuring out how to use it.", scores: { geo: 4, wave: 1 } },
+      { text: "That the sun hits this planet with more energy every hour than we use in a year.",                  scores: { solar: 4, battery: 1 } },
+      { text: "That we might be able to fix the existing system instead of blowing it all up.",                   scores: { gas: 4, nuclear: 1 } }
+    ]
+  }
+];
+
+const RESULTS = {
+  solar: {
+    id: 'solar',
+    themeClass: 'result-solar',
+    badge: 'Solar Energy',
+    title: 'YOU ARE SOLAR',
+    tagline: "High output, full presence, and you need a rest after. The sun does the same thing every day.",
+    funfact: {
+      label: "Wild fact",
+      text: "More solar energy hits the Earth in one hour than the entire world uses in a year. The only problem is catching it."
+    },
+    description: "You show up completely when you show up. You give a lot, you light up a room, and then you need time to recharge before doing it again. That's not inconsistency -- that's a cycle. Solar energy works the same way: incredibly abundant when conditions are right, and the whole engineering challenge is figuring out how to store and distribute what it produces so nothing goes to waste. The future of solar isn't just panels on roofs. It's agrivoltaics -- growing crops under solar panels at the same time. It's floating solar arrays on reservoirs. It's solar paint that turns any surface into a generator. It's the most installed energy source in the world right now and it's not close to its ceiling.",
+    ses: "The SES Certificate at OU connects the technology of solar with the policy, business, and communications work that determines whether it actually gets built and who benefits from it. 15 credits, open to every major, students from over 10 colleges. The certificate was built for people who want to understand the full picture -- not just how it works, but how it moves through the world. ou.edu/mcee/ses",
+    neighbors: [
+      { title: "You're a Battery", note: "They store what you generate. The two of you together are most of the clean energy future." },
+      { title: "Wind Energy",      note: "You two produce at different times of day. That's not competition -- that's load balancing." }
+    ]
+  },
+  wind: {
+    id: 'wind',
+    themeClass: 'result-wind',
+    badge: 'Wind Energy',
+    title: 'YOU ARE WIND',
+    tagline: "Always moving. Most productive when nothing is in your way.",
+    funfact: {
+      label: "Oklahoma fact",
+      text: "Oklahoma is second in the US for wind resources and already gets over 40% of its electricity from wind. Most people at OU have no idea."
+    },
+    description: "You don't do well with constraints. You need room to move, a direction to go, and you pick up speed when the path is clear. Wind energy is the same: low friction, enormous scale, and output that keeps climbing as long as conditions are right. Wind is the fastest-growing electricity source in the world. The turbines being built today are taller than the Eiffel Tower. Offshore wind farms cover areas larger than some US states. And Oklahoma -- where you are right now -- is one of the best places on the planet to do this. The jobs in wind energy aren't just engineering. They're project development, land negotiation, environmental permitting, communications, data analysis, finance. The turbines need all of those people to exist.",
+    ses: "The SES Certificate at OU was built around Oklahoma's energy story, which is genuinely one of the most interesting in the country. 15 credits, any major, students from over 10 colleges. Two core courses plus three electives across technology, policy, business, communications, and social aspects. Learn how it works, who decides where it goes, and what it means for the communities it lands in. ou.edu/mcee/ses",
+    neighbors: [
+      { title: "Solar Energy",   note: "Wind often peaks at night and in winter. Solar peaks during the day in summer. You cover each other." },
+      { title: "You're a Battery", note: "Storage makes intermittent sources like you reliable. That relationship is what the grid needs." }
+    ]
+  },
+  geo: {
+    id: 'geo',
+    themeClass: 'result-geo',
+    badge: 'Geothermal Energy',
+    title: 'YOU ARE GEOTHERMAL',
+    tagline: "You have been quietly reliable for a long time. Not flashy. Definitely underestimated.",
+    funfact: {
+      label: "Depth check",
+      text: "The center of the Earth is about as hot as the surface of the sun. That heat is available everywhere. We've barely figured out how to use it."
+    },
+    description: "You don't need external conditions to perform. You produce consistently regardless of what's happening above the surface, and you've been doing it for longer than anyone has been paying attention. Geothermal energy works that way too: it runs 24 hours a day, 365 days a year, with no fuel and no emissions, drawing on heat that has been accumulating inside the planet for 4.5 billion years. The reason it isn't everywhere is mostly that drilling is expensive and the technology for using lower-temperature geothermal heat is still maturing. That's changing fast. Enhanced geothermal systems -- a newer approach that can work almost anywhere -- are currently being funded at a scale that didn't exist five years ago. This is an early-stage field that is about to stop being early-stage.",
+    ses: "Geothermal sits at the intersection of geology, engineering, policy, and economics -- which is basically a description of the SES Certificate at OU. 15 credits, open to every major, with electives that cover the technical and the human side of energy systems. If you're interested in the stuff nobody is talking about yet, this is where to start. ou.edu/mcee/ses",
+    neighbors: [
+      { title: "Nuclear Energy",  note: "Both of you are baseload -- always on, weather-independent. The grid needs that stability." },
+      { title: "Wave/Tidal",      note: "Two sources that are underused and underestimated. There's a kinship there." }
+    ]
+  },
+  nuclear: {
+    id: 'nuclear',
+    themeClass: 'result-nuclear',
+    badge: 'Nuclear Energy',
+    title: 'YOU ARE NUCLEAR',
+    tagline: "Compact. Dense. Controversial at parties. Also possibly essential.",
+    funfact: {
+      label: "Scale check",
+      text: "A golf-ball-sized piece of uranium contains as much energy as 1,500 tons of coal. Nuclear has the highest energy density of any power source by an enormous margin."
+    },
+    description: "You contain a lot. A lot of intensity, a lot of information, a lot of capability packed into a relatively small footprint. People have opinions about you before they've done the reading. Nuclear energy is the same: it's been generating clean, reliable, high-density electricity for sixty years, produces almost no carbon emissions, and has one of the lowest land footprints of any major energy source -- and it is also the subject of more uninformed public debate than basically anything in the energy space. The next generation of nuclear is genuinely different: small modular reactors that can be factory-built and shipped to wherever power is needed. Nuclear-powered data centers. Reactors designed to be inherently safe by physics, not just procedure. Whether nuclear is part of the clean energy future is one of the most interesting and genuinely open questions in the field right now.",
+    ses: "The SES Certificate at OU covers nuclear in the context of the full energy system -- the technology, the policy, the public communication problem, and the economic case. It's 15 credits, open to every major, and it does not assume you come in knowing the difference between a fission reaction and a fusion reaction. You'll learn. ou.edu/mcee/ses",
+    neighbors: [
+      { title: "Geothermal",      note: "Both baseload, both underused, both requiring a longer argument than 'just build more solar.'" },
+      { title: "You're a Battery", note: "Storage and nuclear are actually a natural pair -- nuclear provides the consistent base, storage handles the peaks." }
+    ]
+  },
+  battery: {
+    id: 'battery',
+    themeClass: 'result-battery',
+    badge: 'Energy Storage',
+    title: "YOU'RE A BATTERY",
+    tagline: "You are not the flashiest energy source. You are the one that makes all the other ones work.",
+    funfact: {
+      label: "Grid reality",
+      text: "The US electric grid has almost no large-scale storage. Right now, electricity is used the moment it's made. Fixing that is one of the central engineering problems of the next 20 years."
+    },
+    description: "You are the person who makes things actually work. You track what's needed, coordinate who's doing what, and smooth out the chaos so the whole system functions. Batteries do the same thing for the energy grid: they absorb excess power when supply is high and release it when demand spikes, turning intermittent sources like wind and solar into something the grid can actually rely on. The battery space right now is legitimately wild. Lithium-ion is just the beginning. Iron-air batteries that can store electricity for days. Gravity batteries that use excess power to lift heavy weights and release it by letting them drop. Liquid metal batteries. Flow batteries the size of warehouses. The breakthrough that unlocks reliable, cheap, long-duration storage would be one of the most consequential technological achievements of this century. Someone has to work on it.",
+    ses: "Storage is a technology problem, an economics problem, a grid policy problem, and a supply chain problem all at once -- which maps almost exactly onto what the SES Certificate covers. 15 credits, open to every major, students from over 10 colleges at OU. Two core courses plus three electives. ou.edu/mcee/ses",
+    neighbors: [
+      { title: "Solar Energy",  note: "You make solar viable around the clock. Solar generates it; you hold onto it." },
+      { title: "Wind Energy",   note: "Same relationship. The wind doesn't always blow when people need the power. That's your job." }
+    ]
+  },
+  wave: {
+    id: 'wave',
+    themeClass: 'result-wave',
+    badge: 'Wave & Tidal Energy',
+    title: 'YOU ARE WAVE/TIDAL',
+    tagline: "Consistent, patient, and operating on a timeline most people haven't thought about yet.",
+    funfact: {
+      label: "Ocean math",
+      text: "The oceans cover 71% of the planet's surface and are in constant motion. The energy in ocean waves and tidal flows is estimated to be enough to power the entire world several times over."
+    },
+    description: "You don't rush. You move on your own schedule, you're not easily disrupted, and you've been doing what you do for much longer than anyone's been watching. Wave and tidal energy works the same way: driven by forces -- gravity, ocean currents, the physics of moving water -- that aren't going to stop regardless of what humans do. Unlike solar and wind, tidal energy is completely predictable. We know exactly when the tides will rise and fall for the next thousand years. That predictability is enormously valuable to a grid that is trying to balance supply and demand in real time. Wave and tidal energy is earlier-stage than solar or wind, which means it is also one of the most open fields in energy right now. The engineering problems are real and unsolved. The policy frameworks are still being written. The economic models are being built from scratch. If you like being early to something, this is early.",
+    ses: "The SES Certificate at OU is designed for people who want to understand where energy is going, not just where it is. It covers the technology, policy, business, and human dimensions of the full energy transition. 15 credits, open to all majors, students from over 10 colleges. ou.edu/mcee/ses",
+    neighbors: [
+      { title: "Geothermal",      note: "Two sources that are quietly consistent and largely overlooked. You understand each other." },
+      { title: "Nuclear Energy",  note: "Both of you are making the argument that the grid needs reliable, always-on sources alongside solar and wind." }
+    ]
+
+  ,gas: {
+    id: 'gas',
+    themeClass: 'result-gas',
+    badge: 'Natural Gas + Carbon Capture',
+    title: 'YOU ARE GAS+CCS',
+    tagline: "You don't blow things up and start over. You make what's already there work better.",
+    funfact: {
+      label: "Reality check",
+      text: "Natural gas currently generates about 40% of US electricity. It's not going away overnight. The question is whether we capture the carbon -- and that technology is getting real."
+    },
+    description: "You're practical in the best way. You look at what exists, figure out what's broken, and fix it -- instead of tearing everything down to rebuild from scratch. Natural gas with carbon capture is exactly that philosophy applied to energy. The infrastructure already exists: pipelines, power plants, industrial facilities. The question isn't whether to use it, it's whether we can decarbonize it while we build out everything else. Carbon capture and storage technology -- pulling CO2 out of the emissions stream and burying it underground -- has been technically possible for decades and is now being deployed at real scale. Blue hydrogen, made from natural gas with the carbon captured, could fuel heavy industry and shipping that can't run on batteries. The transition away from fossil fuels is going to take decades. Someone needs to manage the existing system intelligently while that happens. That's not a consolation role. It's one of the most consequential ones.",
+    ses: "The SES Certificate at OU covers the full energy system -- including the role of fossil fuels, carbon capture, and the transition pathways that actually have to work in the real world. 15 credits, open to every major. The certificate doesn't assume you already think the answer is obvious, because it isn't. ou.edu/mcee/ses",
+    neighbors: [
+      { title: "Nuclear Energy",  note: "Both of you are making the 'reliable baseload matters' argument. Different technologies, same point." },
+      { title: "You're a Battery", note: "You stabilize the existing grid. They stabilize the future one. The work is related." }
+    ]
+  }
+  }
+};
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const state = {
+  current: 0,
+  answers: new Array(QUESTIONS.length).fill(null)
+};
+
+/* =====================================================================
+   DOM HELPERS
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.setAttribute('aria-hidden', 'true');
+  });
+  const t = $(id);
+  t.classList.add('active');
+  t.removeAttribute('aria-hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* =====================================================================
+   RENDER QUESTION
+   ===================================================================== */
+function renderQuestion(index) {
+  const q = QUESTIONS[index];
+  const block = $('question-block');
+  const selected = state.answers[index];
+  const letters = ['A','B','C','D','E','F','G'];
+
+  const pct = Math.round((index / QUESTIONS.length) * 100);
+  $('progress-fill').style.width = pct + '%';
+  $('progress-count').textContent = `${index + 1} of ${QUESTIONS.length}`;
+  $('progress-bar').setAttribute('aria-valuenow', index + 1);
+  $('btn-back').style.visibility = index === 0 ? 'hidden' : 'visible';
+
+  const isLast = index === QUESTIONS.length - 1;
+  $('btn-next').childNodes[0].textContent = isLast ? 'See my result ' : 'Next ';
+
+  const hasAnswer = selected !== null;
+  $('btn-next').classList.toggle('enabled', hasAnswer);
+  $('btn-next').setAttribute('aria-disabled', !hasAnswer);
+
+  const optionsHTML = q.options.map((opt, i) => `
+    <li role="none">
+      <button class="option-btn" type="button" role="button"
+        aria-pressed="${selected === i ? 'true' : 'false'}"
+        data-index="${i}">
+        <span class="option-letter" aria-hidden="true">${letters[i]}</span>
+        <span class="option-text">${opt.text}</span>
+      </button>
+    </li>
+  `).join('');
+
+  block.innerHTML = `
+    <p class="question-eyebrow">${q.eyebrow}</p>
+    <h2 class="question-text">${q.text}</h2>
+    ${q.sub ? `<p class="question-sub">${q.sub}</p>` : ''}
+    <ul class="options-list" role="list" aria-label="Answer options">${optionsHTML}</ul>
+  `;
+
+  block.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => selectOption(index, parseInt(btn.dataset.index)));
+  });
+
+  block.classList.remove('question-block');
+  void block.offsetWidth;
+  block.classList.add('question-block');
+}
+
+/* =====================================================================
+   SELECT
+   ===================================================================== */
+function selectOption(qIndex, oIndex) {
+  state.answers[qIndex] = oIndex;
+  document.querySelectorAll('.option-btn').forEach((btn, i) => {
+    btn.setAttribute('aria-pressed', i === oIndex ? 'true' : 'false');
+  });
+  $('btn-next').classList.add('enabled');
+  $('btn-next').setAttribute('aria-disabled', 'false');
+}
+
+/* =====================================================================
+   NAVIGATE
+   ===================================================================== */
+function goNext() {
+  if (state.answers[state.current] === null) return;
+  if (state.current === QUESTIONS.length - 1) { calculateResult(); return; }
+  state.current++;
+  renderQuestion(state.current);
+}
+
+function goBack() {
+  if (state.current === 0) return;
+  state.current--;
+  renderQuestion(state.current);
+}
+
+/* =====================================================================
+   CALCULATE
+   ===================================================================== */
+function calculateResult() {
+  const scores = { solar: 0, wind: 0, geo: 0, nuclear: 0, battery: 0, wave: 0, gas: 0 };
+  QUESTIONS.forEach((q, qi) => {
+    const ai = state.answers[qi];
+    if (ai !== null) {
+      Object.entries(q.options[ai].scores).forEach(([cat, pts]) => {
+        scores[cat] = (scores[cat] || 0) + pts;
+      });
+    }
+  });
+  const winner = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  showResult(winner);
+}
+
+/* =====================================================================
+   SHOW RESULT
+   ===================================================================== */
+function showResult(key) {
+  const r = RESULTS[key];
+
+  const neighborsHTML = r.neighbors.map(n => `
+    <div class="neighbor-card">
+      <p class="neighbor-title">${n.title}</p>
+      <p class="neighbor-note">${n.note}</p>
+    </div>
+  `).join('');
+
+  const emailBody = `Hi Nova,%0A%0AI just took the "What's Your Energy" quiz and got "${r.title.replace(/YOU ARE |YOU'RE A /,'')}". Curious whether the SES Certificate might fit into my degree program. Can we meet about it?%0A%0AThanks`;
+
+  $('result-content').innerHTML = `
+    <div class="result-card ${r.themeClass}">
+      <div class="result-card-hero">
+        <div class="result-badge">${r.badge}</div>
+        <h1 class="result-title">${r.title}</h1>
+        <p class="result-tagline">${r.tagline}</p>
+      </div>
+      <div class="result-funfact">
+        <div class="funfact-text">
+          <strong>${r.funfact.label}</strong>
+          ${r.funfact.text}
+        </div>
+      </div>
+      <div class="result-card-body">
+        <div class="result-section">
+          <p class="result-section-label">Your type</p>
+          <p class="result-description">${r.description}</p>
+        </div>
+        <div class="result-section">
+          <p class="result-section-label">Where SES comes in</p>
+          <p class="result-ses-link">${r.ses}</p>
+        </div>
+        <div class="result-section">
+          <p class="result-section-label">Your energy neighbors</p>
+          <div class="neighbors-grid">${neighborsHTML}</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="email-nudge">Curious whether this connects to your major? That's a five-minute conversation Nova can have with you.</p>
+    <a class="btn-email"
+       href="mailto:SES@ou.edu?subject=Curious%20about%20the%20SES%20Certificate&body=${emailBody}"
+       aria-label="Email SES to ask about the certificate">
+      <span class="btn-email-icon" aria-hidden="true">
+        <svg width="18" height="18"><use href="#icon-envelope"/></svg>
+      </span>
+      <span class="btn-email-copy">
+        <strong>Ask if it fits your major</strong>
+        <span>Opens an email to Nova at SES@ou.edu. Takes about 10 seconds.</span>
+      </span>
+    </a>
+
+    <div class="result-footer">
+      <button class="btn-retake" id="btn-retake" type="button">
+        <svg class="icon-inline" width="15" height="15" aria-hidden="true"><use href="#icon-refresh"/></svg>
+        Retake
+      </button>
+      <a class="btn-website" href="https://ou.edu/mcee/ses" target="_blank" rel="noopener noreferrer">
+        See the certificate
+        <svg class="icon-inline" width="14" height="14" aria-hidden="true"><use href="#icon-external"/></svg>
+      </a>
+    </div>
+  `;
+
+  $('btn-retake').addEventListener('click', resetQuiz);
+  showScreen('screen-result');
+}
+
+/* =====================================================================
+   RESET
+   ===================================================================== */
+function resetQuiz() {
+  state.current = 0;
+  state.answers.fill(null);
+  showScreen('screen-quiz');
+  renderQuestion(0);
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  $('btn-start').addEventListener('click', () => {
+    showScreen('screen-quiz');
+    renderQuestion(0);
+  });
+  $('btn-next').addEventListener('click', goNext);
+  $('btn-back').addEventListener('click', goBack);
+});
+</script>
+</body>
+</html>
